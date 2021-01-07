@@ -1,5 +1,6 @@
 package com.god.thymeleaf.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.istack.NotNull;
 import lombok.Data;
 
@@ -18,5 +19,6 @@ public class Role {
     private String password;
 
     @ManyToMany(mappedBy = "roles")
+    @JsonIgnore
     private List<User> user;
 }

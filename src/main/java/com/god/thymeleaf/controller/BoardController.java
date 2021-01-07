@@ -1,6 +1,7 @@
 package com.god.thymeleaf.controller;
 
 import com.god.thymeleaf.repository.BoardRepository;
+import com.god.thymeleaf.service.BoardService;
 import com.god.thymeleaf.validator.BoardValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
@@ -8,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,6 +29,9 @@ public class BoardController {
 
     @Autowired
     private BoardValidator boardValidator;
+
+    @Autowired
+    private BoardService boardService;
 
     @GetMapping("/list")
     public String list(Model model,@PageableDefault( size=2) Pageable pageable,
@@ -53,14 +59,19 @@ public class BoardController {
         return "board/form";
     }
     @PostMapping("/form")
-    public String boardSubmit(@Valid Board board, BindingResult bindingResult) {
+    public String boardSubmit(@Valid Board board, BindingResult bindingResult,
+                              Authentication authentication) {
 
         boardValidator.validate(board, bindingResult);
-        if (bindingResult.hasErrors()) {
+        if(bindingResult.hasErrors()) {
             return "board/form";
         }
 
-        boardRepository.save(board);
+        //두가지 방법으로 authentication 조회 가능
+//      String userName=SecurityContextHolder.getContext().getAuthentication().getName(); //userName조회의 다른 방법
+        String userName=authentication.getName();
+//      board.setUser(userName);
+        boardService.save(userName, board);
         return "redirect:/board/list";
     }
 
